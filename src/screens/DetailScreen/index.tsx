@@ -16,6 +16,7 @@ import DefaultButton from '../../components/DefaultButton';
 import Header from '../../components/Header';
 import {useRoute} from '@react-navigation/native';
 import LoadingScreen from '../../modals/LoadingScreen';
+import ShareContentScreen from '../../modals/ShareContentScreen';
 
 interface Question {
   id: number;
@@ -33,7 +34,10 @@ const DetailScreen: () => React.ReactElement = () => {
   const route = useRoute();
   const questionParam = route.params ? route.params.question : {};
 
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareEmail, setShareEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingShare, setLoadingShare] = useState(false);
   const [question, setQuestion] = useState<Question>({
     choices: [],
     id: 0,
@@ -90,6 +94,34 @@ const DetailScreen: () => React.ReactElement = () => {
     }
   };
 
+  const share = () => {
+    setLoadingShare(true);
+    if (shareEmail.length > 0) {
+      api
+        .post(
+          `/share?destination_email=${shareEmail}&content_url=${
+            '/questions/' + question.id.toString()
+          }`,
+        )
+        .then((res) => {
+          setLoadingShare(false);
+          setShowShareModal(false);
+          console.log(res);
+        })
+        .catch((err) => console.log(err));
+    } else {
+      Alert.alert('Alert', 'You must type an email', [
+        {
+          onPress: () => {
+            setLoadingShare(false);
+          },
+          style: 'default',
+          text: 'Ok',
+        },
+      ]);
+    }
+  };
+
   const renderItem = ({item}) => {
     const selected = item == selectedChoice;
     return (
@@ -116,13 +148,27 @@ const DetailScreen: () => React.ReactElement = () => {
       </TouchableOpacity>
     );
   };
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={{flex: 1, backgroundColor: Colors.white}}>
-        <LoadingScreen showModal={loading} />
         <View style={{flex: 1}}>
-          <Header backButton title={'Question'} />
+          <LoadingScreen showModal={loading} />
+          <ShareContentScreen
+            showModal={showShareModal}
+            value={shareEmail}
+            onChange={setShareEmail}
+            onCancel={() => setShowShareModal(false)}
+            onShare={share}
+            loading={loadingShare}
+          />
+          <Header
+            backButton
+            title={'Question'}
+            rightButtonName={'share'}
+            rightButtonAction={() => setShowShareModal(true)}
+          />
           {/* <View style={{height: '80%'}}> */}
           <Text style={styles.question}>{question.question}</Text>
           <FlatList
@@ -131,14 +177,23 @@ const DetailScreen: () => React.ReactElement = () => {
             numColumns={2}
             keyExtractor={(item, index) => index.toString()}
           />
-          {/* </View> */}
-          <View style={styles.buttonContainer}>
-            <DefaultButton
-              color={'primary'}
-              onPress={vote}
-              title={'Vote'}
-              width={Dimensions.width50}
-            />
+          <View style={{flex: 1}}>
+            <View style={styles.buttonContainer}>
+              <DefaultButton
+                color={'secondary'}
+                onPress={() => setShowShareModal(true)}
+                title={'Share Content'}
+                // width={Dimensions.width50}
+              />
+            </View>
+            <View style={styles.buttonContainer}>
+              <DefaultButton
+                color={'primary'}
+                onPress={vote}
+                title={'Vote'}
+                // width={Dimensions.width50}
+              />
+            </View>
           </View>
         </View>
       </SafeAreaView>
@@ -153,7 +208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonContainer: {
-    height: 100,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },

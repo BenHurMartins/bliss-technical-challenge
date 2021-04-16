@@ -1,12 +1,21 @@
 import React, {useEffect, useState} from 'react';
-import {Text, Pressable, StyleSheet, TouchableHighlight} from 'react-native';
+import {
+  Text,
+  Pressable,
+  StyleSheet,
+  TouchableHighlight,
+  ActivityIndicator,
+} from 'react-native';
 import {Colors, Dimensions} from '../constants';
 interface ButtonProps {
   onPress: Function;
-  color: 'primary' | 'secondary' | string;
+  color: 'primary' | 'secondary' | 'warning';
   width?: number;
   height?: number;
   title: string;
+  marginBottom?: number;
+  marginTop?: number;
+  loading?: boolean;
 }
 
 const Header = (props: ButtonProps) => {
@@ -18,6 +27,8 @@ const Header = (props: ButtonProps) => {
             ? Colors.primaryColor
             : props.color == 'secondary'
             ? Colors.secondaryColor
+            : props.color == 'warning'
+            ? Colors.warningColor
             : props.color
           : Colors.white,
         width: props.width ? props.width : '90%',
@@ -25,11 +36,15 @@ const Header = (props: ButtonProps) => {
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 3,
+        marginTop: props.marginTop | 0,
+        marginBottom: props.marginBottom | 0,
         borderColor:
           props.color == 'primary'
             ? Colors.primaryColor
             : props.color == 'secondary'
             ? Colors.secondaryColor
+            : props.color == 'warning'
+            ? Colors.warningColor
             : props.color,
       },
     });
@@ -37,6 +52,7 @@ const Header = (props: ButtonProps) => {
   return (
     <>
       <Pressable
+        disabled={props.loading}
         onPress={() => props.onPress()}
         style={({pressed}) => styles(pressed).buttonContainer}>
         {({pressed}) => {
@@ -44,6 +60,18 @@ const Header = (props: ButtonProps) => {
             <Text style={{color: Colors.white, fontWeight: 'bold'}}>
               {props.title}
             </Text>
+          ) : props.loading ? (
+            <ActivityIndicator
+              color={
+                props.color == 'primary'
+                  ? Colors.primaryColor
+                  : props.color == 'secondary'
+                  ? Colors.secondaryColor
+                  : props.color == 'warning'
+                  ? Colors.warningColor
+                  : props.color
+              }
+            />
           ) : (
             <Text
               style={{
@@ -52,6 +80,8 @@ const Header = (props: ButtonProps) => {
                     ? Colors.primaryColor
                     : props.color == 'secondary'
                     ? Colors.secondaryColor
+                    : props.color == 'warning'
+                    ? Colors.warningColor
                     : props.color,
                 fontWeight: 'bold',
               }}>
