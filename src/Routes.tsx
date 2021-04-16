@@ -2,6 +2,11 @@ import React, {useEffect, useState} from 'react';
 import SplashScreen from 'react-native-splash-screen';
 import {api} from './api/index';
 import RetryAction from './modals/RetryAction';
+
+import {Text} from 'react-native-elements';
+import Toast from 'react-native-toast-message';
+import {Colors} from './constants/';
+
 //Navigation
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -9,6 +14,24 @@ import {createStackNavigator} from '@react-navigation/stack';
 //Screens
 import QuestionsListScreen from './screens/QuestionsListScreen';
 import DetailScreen from './screens/DetailScreen';
+import {View} from 'react-native';
+
+const toastConfig = {
+  success: ({text1, props, ...rest}) => (
+    <View
+      style={{
+        height: 60,
+        width: '90%',
+        backgroundColor: Colors.secondaryColor,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+        opacity: 0.9,
+      }}>
+      <Text style={{color: Colors.white}}>{text1}</Text>
+    </View>
+  ),
+};
 
 const Routes = (props) => {
   const Stack = createStackNavigator();
@@ -64,7 +87,10 @@ const Routes = (props) => {
   return (
     <>
       <RetryAction showModal={apiHealth != 'OK'} action={checkServerHealth} />
-      <NavigationContainer>{mainStack()}</NavigationContainer>
+      <NavigationContainer>
+        <>{mainStack()}</>
+        <Toast config={toastConfig} ref={(ref) => Toast.setRef(ref)} />
+      </NavigationContainer>
     </>
   );
 };

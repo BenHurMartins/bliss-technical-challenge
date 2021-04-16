@@ -3,7 +3,6 @@ import {
   SafeAreaView,
   StyleSheet,
   View,
-  Text,
   StatusBar,
   FlatList,
   TouchableOpacity,
@@ -11,12 +10,13 @@ import {
 } from 'react-native';
 import {api} from '../../api/index';
 import {Colors, Dimensions} from '../../constants';
-import {ListItem, Avatar, Divider, SearchBar} from 'react-native-elements';
+import {ListItem, Avatar, Divider, Text} from 'react-native-elements';
 import DefaultButton from '../../components/DefaultButton';
 import Header from '../../components/Header';
 import {useRoute} from '@react-navigation/native';
 import LoadingScreen from '../../modals/LoadingScreen';
 import ShareContentScreen from '../../modals/ShareContentScreen';
+import Toast, {BaseToast} from 'react-native-toast-message';
 
 interface Question {
   id: number;
@@ -30,6 +30,7 @@ interface Choice {
   choice: string;
   votes: number;
 }
+
 const DetailScreen: () => React.ReactElement = () => {
   const route = useRoute();
   const questionParam = route.params ? route.params.question : {};
@@ -55,6 +56,16 @@ const DetailScreen: () => React.ReactElement = () => {
     questionParam ? setQuestion(questionParam) : null;
   }, []);
 
+  const showToast = (message) => {
+    Toast.show({
+      type: 'success',
+      text1: message,
+      position: 'top',
+      visibilityTime: 3000,
+      topOffset: 50,
+    });
+  };
+
   const vote = () => {
     if (selectedChoice.choice.length > 0) {
       setLoading(true);
@@ -72,6 +83,7 @@ const DetailScreen: () => React.ReactElement = () => {
         .then((res) => {
           console.log(res);
           setLoading(false);
+          showToast('Success');
           setSelectedChoice({
             choice: '',
             votes: 0,
@@ -106,7 +118,7 @@ const DetailScreen: () => React.ReactElement = () => {
         .then((res) => {
           setLoadingShare(false);
           setShowShareModal(false);
-          console.log(res);
+          showToast('Content shared with success :)');
         })
         .catch((err) => console.log(err));
     } else {
