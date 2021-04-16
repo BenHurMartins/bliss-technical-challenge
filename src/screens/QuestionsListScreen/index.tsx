@@ -37,13 +37,11 @@ const QuestionsListScreen: () => React.ReactElement = () => {
   const navigation = useNavigation();
 
   Linking.addEventListener('url', ({url}) => {
-    console.log(url);
     switch (true) {
       case url.includes('questions?filter='):
         const urlFilter = url.split('filter=').pop();
         setFilter(urlFilter);
         setShowSearchBar(true);
-        console.log(filter);
         break;
       case url.includes('questions/'):
         //if the url contains question, the app will redirect to question page
@@ -51,7 +49,6 @@ const QuestionsListScreen: () => React.ReactElement = () => {
         navigation.navigate('DetailScreen', {questionId: parameter});
         break;
       default:
-        console.log('nao passou em nenhum');
         break;
     }
   });
