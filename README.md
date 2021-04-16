@@ -10,6 +10,10 @@ This is the app for bliss technical challenge.
 ```
 npm i
 ```
+If you are using iOS execute:
+```
+npx pod-install
+```
 
 - Then execute command, depending on the OS:
 ```
@@ -35,6 +39,7 @@ npx uri-scheme open bliss://xxxxxxx.xxxxxxx/questions/QUESTION_ID --android
 
 
 Technologies applied:
+- React-Native 0.63.2
 - React Hooks for: state management and navigation,
 - Typescript in 62% of the app, and Javascript in 3%, the others 35% are assets files, jsons and native language.
 - Axios
