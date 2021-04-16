@@ -1,11 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import SplashScreen from 'react-native-splash-screen';
 import {api} from './api/index';
-import RetryAction from './modals/RetryAction';
-
 import {Text} from 'react-native-elements';
+import {Linking} from 'react-native';
 import Toast from 'react-native-toast-message';
 import {Colors} from './constants/';
+import NetInfo, {useNetInfo} from '@react-native-community/netinfo';
+
+//Modals
+import RetryAction from './modals/RetryAction';
+import NoConnection from './modals/NoConnection';
 
 //Navigation
 import {NavigationContainer} from '@react-navigation/native';
@@ -35,8 +39,17 @@ const toastConfig = {
 
 const Routes = (props) => {
   const Stack = createStackNavigator();
-
+  // const netInfo = useNetInfo();
   const [apiHealth, setApiHealth] = useState('OK');
+  const [isOffline, setOfflineStatus] = useState(false);
+
+  useEffect(() => {
+    const removeNetInfoSubscription = NetInfo.addEventListener((state) => {
+      const offline = !state.isConnected;
+      setOfflineStatus(offline);
+    });
+    return () => removeNetInfoSubscription();
+  }, []);
 
   const checkServerHealth = () => {
     api
@@ -62,10 +75,17 @@ const Routes = (props) => {
 
   //The function bellow will check the server health every 10 seconds
   useEffect(() => {
-    setTimeout(() => {
+    setInterval(() => {
       checkServerHealth();
     }, 10000);
-  });
+  }, []);
+
+  // setInterval(() => {
+  //   NetInfo.fetch().then((state) => {
+  //     console.log('Is connected?', state.isConnected);
+  //     setOfflineStatus(!state.isConnected);
+  //   });
+  // }, 5000);
 
   const mainStack = () => {
     return (
@@ -87,6 +107,8 @@ const Routes = (props) => {
   return (
     <>
       <RetryAction showModal={apiHealth != 'OK'} action={checkServerHealth} />
+      {/* <NoConnection showModal={!netInfo.isConnected} /> */}
+      <NoConnection showModal={isOffline} />
       <NavigationContainer>
         <>{mainStack()}</>
         <Toast config={toastConfig} ref={(ref) => Toast.setRef(ref)} />
