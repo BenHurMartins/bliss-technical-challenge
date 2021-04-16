@@ -7,6 +7,7 @@ import {
   StatusBar,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {api} from '../../api/index';
 import {Colors, Dimensions} from '../../constants';
@@ -14,6 +15,7 @@ import {ListItem, Avatar, Divider, SearchBar} from 'react-native-elements';
 import DefaultButton from '../../components/DefaultButton';
 import Header from '../../components/Header';
 import {useRoute} from '@react-navigation/native';
+import LoadingScreen from '../../modals/LoadingScreen';
 
 interface Question {
   id: number;
@@ -31,7 +33,7 @@ const DetailScreen: () => React.ReactElement = () => {
   const route = useRoute();
   const questionParam = route.params ? route.params.question : {};
 
-  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState<Question>({
     choices: [],
     id: 0,
@@ -51,9 +53,40 @@ const DetailScreen: () => React.ReactElement = () => {
 
   const vote = () => {
     if (selectedChoice.choice.length > 0) {
-      //Continue to send vote
+      setLoading(true);
+      let choicesForUpdate = question.choices.map((element: Choice) => {
+        if (element.choice == selectedChoice.choice) {
+          return {choice: element.choice, votes: 1};
+        } else {
+          return {choice: element.choice, votes: 0};
+        }
+      });
+      const questionForUpdate = {...question, choices: choicesForUpdate};
+      console.log(questionForUpdate);
+      api
+        .put(`/questions/${questionForUpdate.id}`, {questionForUpdate})
+        .then((res) => {
+          console.log(res);
+          setLoading(false);
+          setSelectedChoice({
+            choice: '',
+            votes: 0,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          setLoading(false);
+        });
     } else {
-      // Alert for error
+      Alert.alert('Alert', 'You must choose one option', [
+        {
+          onPress: () => {
+            setLoading(false);
+          },
+          style: 'default',
+          text: 'Ok',
+        },
+      ]);
     }
   };
 
@@ -87,6 +120,7 @@ const DetailScreen: () => React.ReactElement = () => {
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={{flex: 1, backgroundColor: Colors.white}}>
+        <LoadingScreen showModal={loading} />
         <View style={{flex: 1}}>
           <Header backButton title={'Question'} />
           {/* <View style={{height: '80%'}}> */}
