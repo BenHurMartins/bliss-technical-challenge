@@ -3,7 +3,7 @@ import {
   SafeAreaView,
   StyleSheet,
   View,
-  Text,
+  Linking,
   StatusBar,
   FlatList,
 } from 'react-native';
@@ -36,9 +36,33 @@ const QuestionsListScreen: () => React.ReactElement = () => {
 
   const navigation = useNavigation();
 
+  Linking.addEventListener('url', ({url}) => {
+    console.log(url);
+    switch (true) {
+      case url.includes('questions?filter='):
+        const urlFilter = url.split('filter=').pop();
+        setFilter(urlFilter);
+        setShowSearchBar(true);
+        console.log(filter);
+        break;
+      case url.includes('questions/'):
+        //if the url contains question, the app will redirect to question page
+        const parameter = url.split('/').pop();
+        navigation.navigate('DetailScreen', {questionId: parameter});
+        break;
+      default:
+        console.log('nao passou em nenhum');
+        break;
+    }
+  });
+
   const getQuestions = () => {
     api
-      .get(`/questions?limit=10&offset=${offset}`)
+      .get(
+        `/questions?limit=10&offset=${offset}${
+          filter.length > 1 ? `&filter=${filter}` : null
+        }`,
+      )
       .then((response) => {
         if (response.status == 200) {
           const questionsResponse: Array<Question> = questions.concat(
@@ -79,6 +103,12 @@ const QuestionsListScreen: () => React.ReactElement = () => {
   const keyExtractor = (item, index) => index.toString();
   const onRefresh = () => setRefreshing(false);
 
+  const search = (text: string) => {
+    setFilter(text);
+    if (text.length > 3) {
+      getQuestions();
+    }
+  };
   const searchBar = () => {
     return showSearchBar ? (
       <SearchBar
@@ -98,7 +128,7 @@ const QuestionsListScreen: () => React.ReactElement = () => {
           color: Colors.black,
         }}
         placeholder={'Search for ...'}
-        onChangeText={setFilter}
+        onChangeText={search}
         value={filter}
       />
     ) : (

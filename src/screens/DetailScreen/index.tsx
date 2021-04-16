@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  Linking,
 } from 'react-native';
 import {api} from '../../api/index';
 import {Colors, Dimensions} from '../../constants';
@@ -33,7 +34,16 @@ interface Choice {
 
 const DetailScreen: () => React.ReactElement = () => {
   const route = useRoute();
-  const questionParam = route.params ? route.params.question : {};
+  const questionParam = route.params
+    ? route.params.question
+      ? route.params.question
+      : null
+    : null;
+  const questionId = route.params
+    ? route.params.questionId
+      ? route.params.questionId
+      : null
+    : null;
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareEmail, setShareEmail] = useState('');
@@ -54,7 +64,34 @@ const DetailScreen: () => React.ReactElement = () => {
 
   useEffect(() => {
     questionParam ? setQuestion(questionParam) : null;
+    questionId ? getQuestionById(questionId) : null;
   }, []);
+
+  const getQuestionById = (id) => {
+    api
+      .get(`/questions/${id.toString()}`)
+      .then((response) => {
+        if (response.status == 200) {
+          const questionsResponse = response.data;
+          setQuestion(questionsResponse);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  Linking.addEventListener('url', ({url}) => {
+    switch (true) {
+      case url.includes('questions/'):
+        //if the url contains question, the app will redirect to question page
+        const parameter = url.split('/').pop();
+        getQuestionById(parameter);
+        break;
+      default:
+        break;
+    }
+  });
 
   const showToast = (message) => {
     Toast.show({
@@ -77,11 +114,9 @@ const DetailScreen: () => React.ReactElement = () => {
         }
       });
       const questionForUpdate = {...question, choices: choicesForUpdate};
-      console.log(questionForUpdate);
       api
         .put(`/questions/${questionForUpdate.id}`, {questionForUpdate})
         .then((res) => {
-          console.log(res);
           setLoading(false);
           showToast('Success');
           setSelectedChoice({

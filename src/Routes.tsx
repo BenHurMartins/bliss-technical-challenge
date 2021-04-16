@@ -57,7 +57,6 @@ const Routes = (props) => {
       .then((response) => {
         if (response.status == 200) {
           const {status} = response.data;
-          console.log(status);
           setApiHealth(status);
           SplashScreen.hide();
         }
@@ -79,13 +78,6 @@ const Routes = (props) => {
       checkServerHealth();
     }, 10000);
   }, []);
-
-  // setInterval(() => {
-  //   NetInfo.fetch().then((state) => {
-  //     console.log('Is connected?', state.isConnected);
-  //     setOfflineStatus(!state.isConnected);
-  //   });
-  // }, 5000);
 
   const mainStack = () => {
     return (
